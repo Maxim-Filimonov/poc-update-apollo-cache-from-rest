@@ -10,29 +10,11 @@ import {
 } from "@apollo/client";
 import React, { useRef } from "react";
 import { RestLink } from "apollo-link-rest";
-
-const postsWithComments = gql`
-  query {
-    allPosts {
-      id
-      title
-      Comments {
-        body
-      }
-    }
-  }
-`;
-
-const addComment = gql`
-  mutation addComment($input: PublishCommentInput!) {
-    addCommentResponse: publishComment(input: $input)
-      @rest(type: "Comment", path: "/comments", method: "POST") {
-      id
-      post_id
-      body
-    }
-  }
-`;
+import { postsWithComments } from "./gqlQueries";
+import {
+  AddCommentDocument,
+  GetPostsWithCommentsDocument,
+} from "./graphql-operations";
 
 function Post(post: {
   id: string;
@@ -40,19 +22,19 @@ function Post(post: {
   Comments: { body: string }[];
 }) {
   const newComment = useRef<HTMLInputElement>(null);
-  const [addCommentFn] = useMutation(addComment, {
+  const [addCommentFn] = useMutation(AddCommentDocument, {
     update: (cache, { data }) => {
       const posts = cache.readQuery({
-        query: postsWithComments,
-      }) as any;
+        query: GetPostsWithCommentsDocument,
+      });
       cache.writeQuery({
-        query: postsWithComments,
+        query: GetPostsWithCommentsDocument,
         data: {
-          allPosts: posts.allPosts.map((post: any) => {
-            if (post.id === data.addCommentResponse.post_id) {
+          allPosts: posts?.allPosts?.map((post: any) => {
+            if (post.id === data?.addCommentResponse?.post_id) {
               return {
                 ...post,
-                Comments: [...post.Comments, data.addCommentResponse],
+                Comments: [...post.Comments, data?.addCommentResponse],
               };
             }
             return post;
@@ -89,13 +71,13 @@ function Post(post: {
 }
 
 function App() {
-  const { data, loading, error } = useQuery(postsWithComments);
+  const { data, loading, error } = useQuery(GetPostsWithCommentsDocument);
   return (
     <div>
       {loading && <h1>Loading</h1>}
       {error && <h1>Error: {error.message}</h1>}
       {data &&
-        data.allPosts.map((post: any) => <Post key={post.id} {...post} />)}
+        data.allPosts?.map((post: any) => <Post key={post.id} {...post} />)}
     </div>
   );
 }

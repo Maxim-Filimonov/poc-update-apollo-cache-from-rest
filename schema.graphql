@@ -1,0 +1,12 @@
+input PublishCommentInput {
+  post_id: ID!
+  body: String!
+}
+type PublishCommentResponse {
+  id: ID!
+  post_id: ID!
+  body: String!
+}
+type Mutation {
+  publishComment(input: PublishCommentInput!): PublishCommentResponse
+}
