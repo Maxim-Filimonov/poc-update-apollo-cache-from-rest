@@ -6,7 +6,9 @@ export const postsWithComments = gql`
       id
       title
       Comments {
+        id
         body
+        post_id
       }
     }
   }

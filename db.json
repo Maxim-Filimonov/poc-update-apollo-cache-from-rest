@@ -60,6 +60,21 @@
       "post_id": "1",
       "body": "new comment",
       "id": 1000
+    },
+    {
+      "post_id": "1",
+      "body": "dfdf",
+      "id": 1001
+    },
+    {
+      "post_id": "1",
+      "body": "sdsds",
+      "id": 1002
+    },
+    {
+      "post_id": "2",
+      "body": "another comment here",
+      "id": 1003
     }
   ]
 }

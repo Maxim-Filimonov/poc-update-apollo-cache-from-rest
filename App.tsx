@@ -10,11 +10,11 @@ import {
 } from "@apollo/client";
 import React, { useRef } from "react";
 import { RestLink } from "apollo-link-rest";
-import { postsWithComments } from "./gqlQueries";
 import {
   AddCommentDocument,
   GetPostsWithCommentsDocument,
 } from "./graphql-operations";
+import { updateCache } from "@conpagoaus/apollo-cache-helpers";
 
 function Post(post: {
   id: string;
@@ -24,21 +24,20 @@ function Post(post: {
   const newComment = useRef<HTMLInputElement>(null);
   const [addCommentFn] = useMutation(AddCommentDocument, {
     update: (cache, { data }) => {
-      const posts = cache.readQuery({
+      updateCache({
+        cache: cache,
         query: GetPostsWithCommentsDocument,
-      });
-      cache.writeQuery({
-        query: GetPostsWithCommentsDocument,
-        data: {
-          allPosts: posts?.allPosts?.map((post: any) => {
-            if (post.id === data?.addCommentResponse?.post_id) {
-              return {
-                ...post,
-                Comments: [...post.Comments, data?.addCommentResponse],
-              };
+        updateFn({ allPosts }) {
+          if (allPosts) {
+            const postToUpdate = allPosts.find((p) => p?.id === post.id);
+            if (postToUpdate && data?.addCommentResponse) {
+              postToUpdate.Comments?.push({
+                body: data.addCommentResponse.body,
+                id: data.addCommentResponse.id,
+                post_id: data.addCommentResponse.post_id,
+              });
             }
-            return post;
-          }),
+          }
         },
       });
     },
